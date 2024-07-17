@@ -6,7 +6,7 @@ const App = () => {
     return (
         <div className="App">
             <header className="App-Header">
-                <h1>Certificate Generator</h1>
+                <h1>Certificate Generator and Email Sender</h1>
                 <FileUpload />
             </header>
         </div>

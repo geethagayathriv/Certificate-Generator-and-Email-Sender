@@ -3,20 +3,31 @@ import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 
 const FileUpload = () => {
-    const [files, setFiles] = useState([]);
+    const [excelFile, setExcelFile] = useState(null);
+    const [docxFile, setDocxFile] = useState(null);
     const [message, setMessage] = useState('');
 
-    const onDrop = (acceptedFiles) =>{
-        setFiles(acceptedFiles);
+    const onExcelDrop = (acceptedFiles) =>{
+        setExcelFile(acceptedFiles[0]);
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const onDocxDrop = (acceptedFiles) =>{
+        setDocxFile(acceptedFiles[0]);
+    };
+
+    const { getRootProps: getExcelRootProps, getInputProps: getExcelInputProps } = useDropzone({ onDrop: onExcelDrop, accept: '.xlsx, .xls' });
+
+    const { getRootProps: getDocxRootProps, getInputProps: getDocxInputProps} = useDropzone({ onDrop: onDocxDrop, accept:'.docx'});
 
     const handleSubmit = async () =>{
+        if(!excelFile || !docxFile){
+            setMessage('Please upload both an Excel file and a DOCX file');
+            return;
+        }
+
         const formData = new FormData();
-        files.forEach((file) => {
-            formData.append('files',file);
-        });
+        formData.append('excelFile',excelFile);
+        formData.append('docxFile',docxFile);
 
         try{
             const response = await axios.post('/api/upload',formData, {
@@ -33,14 +44,17 @@ const FileUpload = () => {
 
     return(
         <div className='file-upload'>
-            <div {...getRootProps({className: 'dropzone'})}>
-                <input {...getInputProps()} />
-                <p>Drag & drop files here, or click to select files</p>
+            <div {...getExcelRootProps({className: 'dropzone'})}>
+                <input {...getExcelInputProps()} />
+                <p>Drag your excel file here or click to select!</p>
+            </div><br></br>
+            <div {...getDocxRootProps({className: 'dropzone'})}>
+                <input {...getDocxInputProps()} />
+                <p>Drop your sample certificate docx file here or click to select!</p>
             </div>
             <ul>
-                {files.map((file) => (
-                    <li key={file.path}>{file.path}</li>
-                ))}
+                {excelFile && <li>Excel file: {excelFile.path}</li>}
+                {docxFile && <li>DOCX file: {docxFile.path}</li>}
             </ul>
             <button onClick={handleSubmit}>Generate Certificates</button>
             {message && <p>{message}</p>}
